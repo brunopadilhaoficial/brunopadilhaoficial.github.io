@@ -116,22 +116,30 @@
                             </div>
                             <input type="number" id="targetIncomeInput" class="block w-full rounded-md border-brand-300 py-2 pl-10 pr-3 bg-green-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition text-brand-700 font-semibold" value="5000">
                         </div>
-                        <p class="text-xs text-gray-400 mt-1">Quanto você quer sacar todo mês (líquido de inflação).</p>
+                        <p class="text-xs text-gray-400 mt-1">Quanto você quer sacar todo mês.</p>
                     </div>
 
                     <!-- Taxas (Grid) -->
                     <div class="grid grid-cols-2 gap-4">
                         <!-- Juros Anual -->
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Rentabilidade Anual (%)</label>
-                            <input type="number" id="interestRate" step="0.1" class="block w-full rounded-md border border-gray-200 py-2 px-3 text-center bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none" value="10">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Rentabilidade Anual</label>
+                            <input type="number" id="interestRate" step="0.1" class="block w-full rounded-md border border-gray-200 py-2 px-3 text-center bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none" value="12">
                         </div>
                         <!-- Inflação -->
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 mb-1">Inflação Estimada (%)</label>
-                            <input type="number" id="inflationRate" step="0.1" class="block w-full rounded-md border border-gray-200 py-2 px-3 text-center bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none" value="4.5">
+                            <label class="block text-xs font-medium text-gray-500 mb-1">Inflação Estimada</label>
+                            <input type="number" id="inflationRate" step="0.1" class="block w-full rounded-md border border-gray-200 py-2 px-3 text-center bg-gray-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none" value="6">
                         </div>
                     </div>
+
+                    <!-- Botão Calcular -->
+                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-bold py-3 px-4 rounded-lg shadow transition duration-200 mt-2 flex items-center justify-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                        </svg>
+                        Calcular Agora
+                    </button>
                 </form>
             </div>
 
@@ -179,7 +187,7 @@
 
     <!-- Footer -->
     <footer class="bg-gray-100 py-6 text-center text-gray-500 text-sm">
-        <p>&copy; 2024 Calculadora Financeira. Simulação educativa.</p>
+        <p>&copy; 2025 Bruno Padilha. Apenas uma simulação!</p>
     </footer>
 
     <!-- Script Lógico -->
@@ -258,7 +266,11 @@
         }
 
         // Event Listeners
-        Object.values(inputs).forEach(el => el.addEventListener('input', calculate));
+        // Agora ouvimos apenas o 'submit' do formulário (botão ou Enter)
+        document.getElementById('calc-form').addEventListener('submit', function(e) {
+            e.preventDefault(); // Impede o recarregamento da página
+            calculate();
+        });
 
         // Função Principal de Cálculo
         function calculate() {
