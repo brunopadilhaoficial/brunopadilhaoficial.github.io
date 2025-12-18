@@ -46,7 +46,7 @@
 <body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
 
     <!-- Top Bar -->
-    <div class="bg-[#0c0c0d] text-white py-1.5 text-center shadow-sm z-10 relative">
+    <div class="bg-[#181e1a] text-white py-1.5 text-center shadow-sm z-10 relative">
         <a href="https://www.youtube.com/@BrunoPadilhaOficial" target="_blank" class="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wide hover:text-brand-400 transition-colors">
             <svg class="w-3.5 h-3.5 text-red-500 fill-current" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
             @BrunoPadilhaOficial
@@ -69,12 +69,15 @@
             <div class="w-full lg:w-1/3 bg-white p-6 rounded-2xl card-shadow h-fit">
                 
                 <!-- Abas de Modo -->
-                <div class="flex rounded-lg overflow-hidden mb-6 border border-gray-200">
-                    <button id="tabTime" onclick="switchMode('time')" class="w-1/2 py-2 text-sm transition-colors tab-active">
-                        Calcular Resultado
+                <div class="flex rounded-lg overflow-hidden mb-6 border border-gray-200 text-xs sm:text-sm">
+                    <button id="tabTime" onclick="switchMode('time')" class="flex-1 py-3 transition-colors tab-active text-center">
+                        Acumular
                     </button>
-                    <button id="tabTarget" onclick="switchMode('target')" class="w-1/2 py-2 text-sm transition-colors tab-inactive">
-                        Calcular Tempo
+                    <button id="tabTarget" onclick="switchMode('target')" class="flex-1 py-3 transition-colors tab-inactive text-center border-l border-r border-gray-300">
+                        Meta Tempo
+                    </button>
+                    <button id="tabWithdraw" onclick="switchMode('withdraw')" class="flex-1 py-3 transition-colors tab-inactive text-center">
+                        Retiradas
                     </button>
                 </div>
 
@@ -83,59 +86,80 @@
                 <form id="calc-form" class="space-y-6">
                     
                     <!-- Bloco de Finanças Pessoais (Interligado) -->
-                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                        <!-- Renda Mensal -->
+                    <div class="space-y-4 bg-gray-50 p-4 rounded-lg border border-gray-100 relative">
+                        
+                        <!-- INVESTIMENTO INICIAL -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Renda Mensal Líquida</label>
+                            <label id="initialInvestLabel" class="block text-sm font-medium text-gray-700 mb-1">Já tenho investido</label>
                             <div class="relative rounded-md shadow-sm">
                                 <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                                     <span class="text-gray-500 sm:text-sm">R$</span>
-                                </div>
-                                <input type="text" inputmode="numeric" id="currentIncome" oninput="maskCurrency(this)" class="block w-full rounded-md border-gray-300 py-2 pl-10 pr-3 bg-white focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition font-semibold" value="5.000,00">
+                                    </div>
+                                <input type="text" inputmode="numeric" id="initialInvestmentInput" oninput="maskCurrency(this)" class="block w-full rounded-md border-gray-300 py-2 pl-10 pr-3 bg-white focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition text-gray-600 font-bold" value="0,00" placeholder="0,00">
                             </div>
                         </div>
 
-                        <!-- Custo de Vida -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
-                                <span>Custo de Vida Atual</span>
-                                <span class="text-xs text-gray-400 font-normal self-center">Gasto Mensal</span>
-                            </label>
-                            <div class="relative rounded-md shadow-sm">
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span class="text-gray-500 sm:text-sm">R$</span>
+                        <!-- GRUPO: ACUMULAÇÃO (Renda, Custo, Aporte) -->
+                        <div id="accumulation-inputs" class="space-y-4 border-t border-gray-200 pt-4">
+                            <!-- Renda Mensal -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Renda Mensal Líquida</label>
+                                <div class="relative rounded-md shadow-sm">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <span class="text-gray-500 sm:text-sm">R$</span>
+                                    </div>
+                                    <input type="text" inputmode="numeric" id="currentIncome" oninput="maskCurrency(this)" class="block w-full rounded-md border-gray-300 py-2 pl-10 pr-3 bg-white focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition font-semibold" value="5.000,00">
                                 </div>
-                                <input type="text" inputmode="numeric" id="costOfLivingInput" oninput="maskCurrency(this)" class="block w-full rounded-md border-gray-300 py-2 pl-10 pr-3 bg-white focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition text-red-600" value="3.500,00">
+                            </div>
+
+                            <!-- Custo de Vida -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
+                                    <span>Custo de Vida Atual</span>
+                                    <span class="text-xs text-gray-400 font-normal self-center">Gasto Mensal</span>
+                                </label>
+                                <div class="relative rounded-md shadow-sm">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <span class="text-gray-500 sm:text-sm">R$</span>
+                                    </div>
+                                    <input type="text" inputmode="numeric" id="costOfLivingInput" oninput="maskCurrency(this)" class="block w-full rounded-md border-gray-300 py-2 pl-10 pr-3 bg-white focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition text-red-600" value="3.500,00">
+                                </div>
+                            </div>
+
+                            <!-- Aporte Mensal -->
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
+                                    <span>Quanto vai investir?</span>
+                                    <span class="text-xs text-gray-400 font-normal self-center">O que sobra</span>
+                                </label>
+                                <div class="relative rounded-md shadow-sm">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <span class="text-gray-500 sm:text-sm">R$</span>
+                                    </div>
+                                    <input type="text" inputmode="numeric" id="monthlyContribInput" oninput="maskCurrency(this)" class="block w-full rounded-md border-brand-300 py-2 pl-10 pr-3 bg-brand-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition text-brand-700 font-bold" value="1.500,00">
+                                </div>
                             </div>
                         </div>
 
-                        <!-- Investimento Inicial (NOVO CAMPO) -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Já tenho investido</label>
-                            <div class="relative rounded-md shadow-sm">
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span class="text-gray-500 sm:text-sm">R$</span>
+                        <!-- GRUPO: RETIRADAS (Apenas Retirada Mensal) -->
+                        <div id="withdrawal-inputs" class="hidden space-y-4 border-t border-gray-200 pt-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
+                                    <span>Quanto quer retirar por mês?</span>
+                                </label>
+                                <div class="relative rounded-md shadow-sm">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <span class="text-gray-500 sm:text-sm">R$</span>
+                                    </div>
+                                    <input type="text" inputmode="numeric" id="monthlyWithdrawInput" oninput="maskCurrency(this)" class="block w-full rounded-md border-red-300 py-2 pl-10 pr-3 bg-red-50 focus:bg-white focus:ring-2 focus:ring-red-500 outline-none transition text-red-700 font-bold" value="2.000,00">
                                 </div>
-                                <input type="text" inputmode="numeric" id="initialInvestmentInput" oninput="maskCurrency(this)" class="block w-full rounded-md border-gray-300 py-2 pl-10 pr-3 bg-white focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition text-gray-600" value="0,00" placeholder="0,00">
+                                <p class="text-xs text-gray-400 mt-1">Este valor será descontado mensalmente do seu saldo.</p>
                             </div>
                         </div>
 
-                        <!-- Aporte Mensal -->
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1 flex justify-between">
-                                <span>Quanto vai investir?</span>
-                                <span class="text-xs text-gray-400 font-normal self-center">O que sobra</span>
-                            </label>
-                            <div class="relative rounded-md shadow-sm">
-                                <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                                    <span class="text-gray-500 sm:text-sm">R$</span>
-                                </div>
-                                <input type="text" inputmode="numeric" id="monthlyContribInput" oninput="maskCurrency(this)" class="block w-full rounded-md border-brand-300 py-2 pl-10 pr-3 bg-brand-50 focus:bg-white focus:ring-2 focus:ring-brand-500 outline-none transition text-brand-700 font-bold" value="1.500,00">
-                            </div>
-                        </div>
                     </div>
 
-                    <!-- MODO TEMPO: Input de Anos -->
+                    <!-- MODO TEMPO / RETIRADA: Input de Anos -->
                     <div id="mode-time-inputs">
                         <label class="block text-sm font-medium text-gray-600 mb-1">Por quantos anos?</label>
                         <div class="relative rounded-md shadow-sm">
@@ -169,6 +193,19 @@
                                     <span class="text-gray-500 sm:text-sm">%</span>
                                 </div>
                             </div>
+                            <!-- INDICADOR DE SELIC (Novo) -->
+                            <div class="text-[10px] text-gray-400 mt-1 flex justify-between items-center px-1">
+                                <span class="flex items-center gap-1">
+                                    Meta Selic: 
+                                    <button type="button" id="selicButton" class="text-brand-600 hover:text-brand-700 hover:underline font-bold cursor-pointer bg-brand-50 px-1 rounded transition-colors" title="Clique para usar este valor">...</button>
+                                </span>
+                                <a href="https://www.bcb.gov.br/controleinflacao/taxaselic" target="_blank" class="flex items-center gap-1 text-gray-400 hover:text-brand-600 transition-colors" title="Ver fonte oficial no BCB">
+                                    <span class="hidden sm:inline">BCB</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
+                            </div>
                         </div>
                         <!-- Inflação -->
                         <div>
@@ -178,6 +215,19 @@
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3">
                                     <span class="text-gray-500 sm:text-sm">%</span>
                                 </div>
+                            </div>
+                            <!-- INDICADOR DE IPCA -->
+                            <div class="text-[10px] text-gray-400 mt-1 flex justify-between items-center px-1">
+                                <span class="flex items-center gap-1">
+                                    IPCA 12m: 
+                                    <button type="button" id="ipcaButton" class="text-brand-600 hover:text-brand-700 hover:underline font-bold cursor-pointer bg-brand-50 px-1 rounded transition-colors" title="Clique para usar este valor">...</button>
+                                </span>
+                                <a href="https://www.ibge.gov.br/explica/inflacao.php" target="_blank" class="flex items-center gap-1 text-gray-400 hover:text-brand-600 transition-colors" title="Ver fonte oficial no IBGE">
+                                    <span class="hidden sm:inline">IBGE</span>
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                    </svg>
+                                </a>
                             </div>
                         </div>
                     </div>
@@ -213,7 +263,7 @@
                 </div>
 
                 <!-- Comparativo / Barra -->
-                <div class="bg-brand-50 rounded-xl p-4 flex items-center justify-between border border-brand-100">
+                <div class="bg-brand-50 rounded-xl p-4 flex items-center justify-between border border-brand-100" id="progressContainer">
                     <div class="flex-grow mr-4">
                         <span class="text-sm text-brand-900 font-medium" id="progressLabel">Cobertura do Custo de Vida:</span>
                         <div class="w-full bg-gray-200 rounded-full h-2.5 mt-2">
@@ -244,8 +294,92 @@
 
     <!-- Script Lógico -->
     <script>
-        // --- MÁSCARAS DE INPUT ---
+        // --- INTEGRAÇÃO COM API DO BCB E IBGE ---
         
+        // Buscar SELIC
+        async function fetchSelicData() {
+            const selicButton = document.getElementById('selicButton');
+            let selicValue = "11.25"; // Valor de fallback seguro
+            
+            try {
+                // API do Banco Central: Série 432 (Meta Selic)
+                const response = await fetch('https://api.bcb.gov.br/dados/serie/bcdata.sgs.432/dados/ultimos/1?formato=json');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data && data.length > 0) {
+                        selicValue = data[0].valor;
+                    }
+                }
+            } catch (error) {
+                console.log("Erro ao buscar SELIC, usando valor padrão:", error);
+            }
+
+            const displayValue = selicValue.replace('.', ',') + "%";
+            selicButton.innerText = displayValue;
+            
+            selicButton.onclick = function() {
+                setInterest(selicValue.replace('.', ','));
+            };
+        }
+
+        // Buscar IPCA
+        async function fetchInflationData() {
+            const ipcaButton = document.getElementById('ipcaButton');
+            let ipcaValue = "4.46"; 
+            
+            try {
+                const response = await fetch('https://servicodados.ibge.gov.br/api/v3/agregados/1737/periodos/-1/variaveis/2265?localidades=N1[all]');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const series = data[0].resultados[0].series[0].serie;
+                    const latestKey = Object.keys(series)[0]; 
+                    const fetchedValue = series[latestKey];
+                    
+                    if (fetchedValue) {
+                        ipcaValue = fetchedValue;
+                    }
+                }
+            } catch (error) {
+                console.log("Erro ao buscar IPCA, usando valor padrão:", error);
+            }
+
+            const displayValue = ipcaValue.replace('.', ',') + "%";
+            ipcaButton.innerText = displayValue;
+            
+            ipcaButton.onclick = function() {
+                setInflation(ipcaValue.replace('.', ','));
+            };
+        }
+
+        // Chamar as funções ao carregar
+        fetchSelicData();
+        fetchInflationData();
+
+
+        // --- FUNÇÕES DE AJUDA ---
+        function setInflation(val) {
+            document.getElementById('inflationRate').value = val;
+            calculate();
+            feedbackButton(document.getElementById('ipcaButton'));
+        }
+
+        function setInterest(val) {
+            document.getElementById('interestRate').value = val;
+            calculate();
+            feedbackButton(document.getElementById('selicButton'));
+        }
+
+        function feedbackButton(btn) {
+            const originalText = btn.innerText;
+            btn.innerText = "Aplicado!";
+            setTimeout(() => {
+                btn.innerText = originalText;
+            }, 1000);
+        }
+
+        // --- MÁSCARAS DE INPUT ---
         function maskCurrency(input) {
             let value = input.value.replace(/\D/g, ""); 
             if (value === "") {
@@ -266,7 +400,6 @@
         }
 
         // --- FUNÇÕES AUXILIARES DE CONVERSÃO ---
-
         function parseMoney(str) {
             if (!str) return 0;
             let clean = str.replace(/\./g, '').replace(',', '.');
@@ -291,8 +424,9 @@
         const inputs = {
             currentIncome: document.getElementById('currentIncome'),
             costOfLivingInput: document.getElementById('costOfLivingInput'),
-            initialInvestmentInput: document.getElementById('initialInvestmentInput'), // Novo
+            initialInvestmentInput: document.getElementById('initialInvestmentInput'), 
             monthlyContribInput: document.getElementById('monthlyContribInput'),
+            monthlyWithdrawInput: document.getElementById('monthlyWithdrawInput'), // Novo
             yearsInput: document.getElementById('yearsInput'),
             targetIncomeInput: document.getElementById('targetIncomeInput'),
             interestRate: document.getElementById('interestRate'),
@@ -300,13 +434,20 @@
         };
 
         const containers = {
+            accumulation: document.getElementById('accumulation-inputs'),
+            withdrawal: document.getElementById('withdrawal-inputs'),
             time: document.getElementById('mode-time-inputs'),
             target: document.getElementById('mode-target-inputs')
         }
 
         const tabs = {
             time: document.getElementById('tabTime'),
-            target: document.getElementById('tabTarget')
+            target: document.getElementById('tabTarget'),
+            withdraw: document.getElementById('tabWithdraw')
+        }
+
+        const labels = {
+            initialInvest: document.getElementById('initialInvestLabel')
         }
 
         const displays = {
@@ -316,6 +457,7 @@
             label2: document.getElementById('resultLabel2'),
             val2: document.getElementById('resultValue2'),
             sub2: document.getElementById('resultSub2'),
+            progressContainer: document.getElementById('progressContainer'),
             progressLabel: document.getElementById('progressLabel'),
             progressBar: document.getElementById('progressBar'),
             progressPercent: document.getElementById('progressPercent')
@@ -326,33 +468,26 @@
         // --- LÓGICA DE INPUTS INTERLIGADOS (RENDA = CUSTO + APORTE) ---
 
         function updateFromIncome() {
-            // Renda Mudou -> Recalcula Aporte (Renda - Custo)
+            if (mode === 'withdraw') return;
             const income = parseMoney(inputs.currentIncome.value);
             const cost = parseMoney(inputs.costOfLivingInput.value);
-            
-            let result = income - cost;
-            inputs.monthlyContribInput.value = formatMoneyInput(result);
+            inputs.monthlyContribInput.value = formatMoneyInput(income - cost);
         }
 
         function updateFromCost() {
-            // Custo Mudou -> Recalcula Aporte (Renda - Custo)
+            if (mode === 'withdraw') return;
             const income = parseMoney(inputs.currentIncome.value);
             const cost = parseMoney(inputs.costOfLivingInput.value);
-            
-            let result = income - cost;
-            inputs.monthlyContribInput.value = formatMoneyInput(result);
+            inputs.monthlyContribInput.value = formatMoneyInput(income - cost);
         }
 
         function updateFromContrib() {
-            // Aporte Mudou -> Recalcula Custo (Renda - Aporte)
+            if (mode === 'withdraw') return;
             const income = parseMoney(inputs.currentIncome.value);
             const contrib = parseMoney(inputs.monthlyContribInput.value);
-            
-            let result = income - contrib;
-            inputs.costOfLivingInput.value = formatMoneyInput(result);
+            inputs.costOfLivingInput.value = formatMoneyInput(income - contrib);
         }
 
-        // Listeners para sincronia
         inputs.currentIncome.addEventListener('input', updateFromIncome);
         inputs.costOfLivingInput.addEventListener('input', updateFromCost);
         inputs.monthlyContribInput.addEventListener('input', updateFromContrib);
@@ -362,33 +497,62 @@
         function switchMode(newMode) {
             mode = newMode;
             
-            if(mode === 'time') {
-                tabs.time.className = "w-1/2 py-2 text-sm transition-colors tab-active";
-                tabs.target.className = "w-1/2 py-2 text-sm transition-colors tab-inactive";
+            // Resetar estilos das abas
+            tabs.time.className = "flex-1 py-3 transition-colors tab-inactive text-center";
+            tabs.target.className = "flex-1 py-3 transition-colors tab-inactive text-center border-l border-r border-gray-300";
+            tabs.withdraw.className = "flex-1 py-3 transition-colors tab-inactive text-center";
+
+            // Ativar aba selecionada
+            if (mode === 'time') tabs.time.className = "flex-1 py-3 transition-colors tab-active text-center";
+            if (mode === 'target') tabs.target.className = "flex-1 py-3 transition-colors tab-active text-center border-l border-r border-gray-300";
+            if (mode === 'withdraw') tabs.withdraw.className = "flex-1 py-3 transition-colors tab-active text-center";
+
+            // Visibilidade dos containers de INPUT
+            if (mode === 'withdraw') {
+                containers.accumulation.classList.add('hidden');
+                containers.withdrawal.classList.remove('hidden');
+                labels.initialInvest.innerText = "Valor Total Investido";
+                labels.initialInvest.classList.add('text-brand-700', 'font-bold');
+            } else {
+                containers.accumulation.classList.remove('hidden');
+                containers.withdrawal.classList.add('hidden');
+                labels.initialInvest.innerText = "Já tenho investido";
+                labels.initialInvest.classList.remove('text-brand-700', 'font-bold');
+            }
+
+            // Visibilidade de Tempo vs Meta
+            if(mode === 'target') {
+                containers.time.classList.add('hidden');
+                containers.target.classList.remove('hidden');
+                inputs.targetIncomeInput.value = inputs.costOfLivingInput.value;
+            } else {
                 containers.time.classList.remove('hidden');
                 containers.target.classList.add('hidden');
+            }
 
+            // Textos de Resultado
+            if (mode === 'time') {
                 displays.label1.innerText = "Patrimônio Acumulado";
                 displays.sub1.innerText = "Valor real ao final do período";
                 displays.label2.innerText = "Renda Mensal Vitalícia";
                 displays.sub2.innerText = "Sacando apenas o juro real";
                 displays.progressLabel.innerText = "Cobertura do Custo de Vida:";
-
-            } else {
-                tabs.target.className = "w-1/2 py-2 text-sm transition-colors tab-active";
-                tabs.time.className = "w-1/2 py-2 text-sm transition-colors tab-inactive";
-                containers.target.classList.remove('hidden');
-                containers.time.classList.add('hidden');
-
-                // Sincronizar (Copiar valor do custo de vida para meta)
-                inputs.targetIncomeInput.value = inputs.costOfLivingInput.value;
-
+                displays.progressContainer.classList.remove('hidden');
+            } else if (mode === 'target') {
                 displays.label1.innerText = "Tempo Necessário";
                 displays.sub1.innerText = "Para atingir sua meta";
                 displays.label2.innerText = "Patrimônio Necessário";
                 displays.sub2.innerText = "Montante gerador da renda";
                 displays.progressLabel.innerText = "Progresso da Meta:";
+                displays.progressContainer.classList.remove('hidden');
+            } else if (mode === 'withdraw') {
+                displays.label1.innerText = "Saldo Restante";
+                displays.sub1.innerText = "Patrimônio ao final do período";
+                displays.label2.innerText = "Renda Passiva Média";
+                displays.sub2.innerText = "Média de rendimento real mensal";
+                displays.progressContainer.classList.add('hidden'); // Barra não faz sentido aqui
             }
+
             calculate();
         }
 
@@ -398,57 +562,45 @@
         });
 
         function calculate() {
-            // Parsing correto dos inputs formatados
-            const P = parseMoney(inputs.monthlyContribInput.value);
             const initialInv = parseMoney(inputs.initialInvestmentInput.value);
             const costOfLiving = parseMoney(inputs.costOfLivingInput.value) || 1;
             
             const i_nominal_anual = parseRate(inputs.interestRate.value) / 100;
             const inflacao_anual = parseRate(inputs.inflationRate.value) / 100;
             
-            // Taxa Real
             let i_real_anual = ((1 + i_nominal_anual) / (1 + inflacao_anual)) - 1;
             if (i_real_anual <= 0) i_real_anual = 0.0001;
             let i_real_mensal = Math.pow(1 + i_real_anual, 1/12) - 1;
 
             let years = 0;
+            let P = 0; // Contribution (PMT)
 
             if (mode === 'time') {
+                // --- ACUMULAÇÃO (TEMPO) ---
+                P = parseMoney(inputs.monthlyContribInput.value);
                 years = parseInt(inputs.yearsInput.value) || 0;
-                
                 let meses = years * 12;
                 
-                // FV = PV * (1+i)^n + PMT * [((1+i)^n - 1) / i]
                 let fv_initial = initialInv * Math.pow(1 + i_real_mensal, meses);
                 let fv_contrib = P * ( (Math.pow(1 + i_real_mensal, meses) - 1) / i_real_mensal );
                 
                 let saldo = fv_initial + fv_contrib;
                 if (saldo < 0) saldo = 0;
-
                 let rendaGerada = saldo * i_real_mensal;
 
                 displays.val1.innerText = formatCurrency(saldo);
                 displays.val2.innerText = formatCurrency(rendaGerada);
-
+                
                 let percent = (rendaGerada / costOfLiving) * 100;
-                displays.progressLabel.innerText = "Cobertura do Custo de Vida:";
                 updateProgressBar(percent);
-
                 updateChart(years, P, initialInv, i_real_mensal, null);
 
-            } else {
+            } else if (mode === 'target') {
+                // --- META (TEMPO) ---
+                P = parseMoney(inputs.monthlyContribInput.value);
                 let targetIncome = parseMoney(inputs.targetIncomeInput.value);
-                
-                // Saldo Necessário = Renda / i
                 let saldoNecessario = targetIncome / i_real_mensal;
                 
-                // Cálculo de tempo com PV (Investimento Inicial)
-                // FV = PV * (1+i)^n + (PMT/i) * [(1+i)^n - 1]
-                // FV + PMT/i = (1+i)^n * (PV + PMT/i)
-                // (FV + PMT/i) / (PV + PMT/i) = (1+i)^n
-                // n = ln(...) / ln(1+i)
-                
-                // Numerador e Denominador
                 let pmt_over_i = P / i_real_mensal;
                 let numerator = saldoNecessario + pmt_over_i;
                 let denominator = initialInv + pmt_over_i;
@@ -456,34 +608,47 @@
                 if (denominator > 0 && numerator > 0) {
                     let frac = numerator / denominator;
                     if (frac > 0) {
-                        let mesesNecessarios = Math.log(frac) / Math.log(1 + i_real_mensal);
-                        years = mesesNecessarios / 12;
-                    } else {
-                        years = 0; // Já passou ou impossível
-                    }
-                } else {
-                    years = 0;
-                }
+                        years = (Math.log(frac) / Math.log(1 + i_real_mensal)) / 12;
+                    } else years = 0;
+                } else years = 0;
                 
-                // Se já tem dinheiro suficiente
-                if (initialInv * i_real_mensal >= targetIncome) {
-                    years = 0;
-                }
-
+                if (initialInv * i_real_mensal >= targetIncome) years = 0;
                 if (!isFinite(years) || years > 100) years = 100; 
                 if (years < 0) years = 0;
 
                 let anosInt = Math.floor(years);
                 let mesesInt = Math.round((years - anosInt) * 12);
                 displays.val1.innerText = `${anosInt} anos e ${mesesInt} meses`;
-                
                 displays.val2.innerText = formatCurrency(saldoNecessario);
 
                 let percent = (targetIncome / costOfLiving) * 100;
-                displays.progressLabel.innerText = "Meta vs Custo de Vida Atual:";
                 updateProgressBar(percent);
-
                 updateChart(years, P, initialInv, i_real_mensal, saldoNecessario);
+
+            } else if (mode === 'withdraw') {
+                // --- RETIRADA (USUFRUTO) ---
+                let withdrawAmount = parseMoney(inputs.monthlyWithdrawInput.value);
+                P = -withdrawAmount; // PMT negativo
+                years = parseInt(inputs.yearsInput.value) || 0;
+                let meses = years * 12;
+
+                // FV = PV*(1+i)^n - W * [((1+i)^n - 1)/i]
+                // Mas aqui W é positivo na fórmula se subtrairmos. Como P é negativo, somamos.
+                let fv_initial = initialInv * Math.pow(1 + i_real_mensal, meses);
+                let fv_draw = P * ( (Math.pow(1 + i_real_mensal, meses) - 1) / i_real_mensal );
+                
+                let saldo = fv_initial + fv_draw;
+                if (saldo < 0) saldo = 0; // Acabou o dinheiro
+
+                // Média de Renda Passiva não faz sentido fixo, pois o saldo cai. 
+                // Vamos mostrar o quanto o montante inicial geraria de renda passiva "segura"
+                let rendaSeguraInicial = initialInv * i_real_mensal;
+
+                displays.val1.innerText = formatCurrency(saldo);
+                displays.val2.innerText = formatCurrency(rendaSeguraInicial);
+                
+                // Gráfico
+                updateChart(years, P, initialInv, i_real_mensal, null);
             }
         }
 
@@ -491,10 +656,8 @@
             let p = percent;
             if (p > 100) p = 100;
             if (p < 0) p = 0;
-
             displays.progressBar.style.width = `${p}%`;
             displays.progressPercent.innerText = `${percent.toFixed(1)}%`;
-
             if (percent >= 100) {
                 displays.progressBar.classList.remove('bg-brand-600');
                 displays.progressBar.classList.add('bg-blue-500');
@@ -509,30 +672,23 @@
             
             const labels = [];
             const dataPatrimonio = [];
-            const dataInvestido = [];
             
             let maxYears = Math.ceil(yearsFloat);
             if (maxYears < 5) maxYears = 5; 
             if (maxYears > 100) maxYears = 100;
 
             let saldo = initialInv;
-            let totalInvestido = initialInv;
             let meses = maxYears * 12;
 
-            // Ponto inicial (Ano 0)
             labels.push('Hoje');
             dataPatrimonio.push(saldo);
-            dataInvestido.push(totalInvestido);
 
             for (let m = 1; m <= meses; m++) {
                 saldo = saldo * (1 + i_monthly) + P;
-                totalInvestido += P;
                 if (saldo < 0) saldo = 0; 
-
                 if (m % 12 === 0) {
                     labels.push(`Ano ${m/12}`);
                     dataPatrimonio.push(saldo);
-                    dataInvestido.push(totalInvestido);
                 }
             }
 
@@ -540,16 +696,29 @@
 
             const datasets = [
                 {
-                    label: 'Patrimônio Acumulado',
+                    label: mode === 'withdraw' ? 'Saldo Remanescente' : 'Patrimônio Acumulado',
                     data: dataPatrimonio,
-                    borderColor: '#16a34a',
-                    backgroundColor: 'rgba(22, 163, 74, 0.1)',
+                    borderColor: mode === 'withdraw' ? '#ef4444' : '#16a34a', // Vermelho para retirada
+                    backgroundColor: mode === 'withdraw' ? 'rgba(239, 68, 68, 0.1)' : 'rgba(22, 163, 74, 0.1)',
                     borderWidth: 3,
                     fill: true,
                     tension: 0.4,
                     pointRadius: 0
-                },
-                {
+                }
+            ];
+
+            if (mode !== 'withdraw' && mode !== 'target') {
+                 // Linha de investido (só faz sentido na acumulação)
+                 let dataInvestido = [];
+                 let investido = initialInv;
+                 dataInvestido.push(investido);
+                 for (let m = 1; m <= meses; m++) {
+                     if (m % 12 === 0) {
+                         investido += (P*12); // P é mensal
+                         dataInvestido.push(investido);
+                     }
+                 }
+                 datasets.push({
                     label: 'Dinheiro Investido',
                     data: dataInvestido,
                     borderColor: '#9ca3af',
@@ -558,8 +727,8 @@
                     fill: false,
                     tension: 0.4,
                     pointRadius: 0
-                }
-            ];
+                });
+            }
 
             if (targetLineValue && mode === 'target') {
                 let targetData = new Array(dataPatrimonio.length).fill(targetLineValue);
@@ -597,6 +766,7 @@
                     },
                     scales: {
                         y: {
+                            beginAtZero: true,
                             ticks: {
                                 callback: function(value) {
                                     if (value >= 1000000) return 'R$ ' + (value/1000000).toFixed(1) + 'M';
@@ -612,13 +782,10 @@
             });
         }
 
-        // Inicializa já formatado
         calculate();
 
-        // UX Melhorada: Selecionar conteúdo ao clicar
         document.querySelectorAll('input').forEach(input => {
             input.addEventListener('focus', function() {
-                // Timeout para garantir que o clique não desfaça a seleção
                 setTimeout(() => this.select(), 50);
             });
         });
