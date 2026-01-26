@@ -3,256 +3,415 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Contador MTG - 3 Jogadores</title>
+    <title>MTG: Contadores Épicos</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        /* Estilos Gerais (Dark Mode para economizar bateria e conforto visual) */
+        :root {
+            --bg-color: #0a0a0c;
+            --card-bg: #1c1c24;
+            --text-color: #e0e0e0;
+            --accent-gold: #cba35e;
+            --accent-red: #b33939;
+            --accent-green: #2e8b57;
+            --border-color: #3a3a4a;
+        }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1a1a1a;
-            color: #ffffff;
+            font-family: 'Cinzel Decorative', serif;
+            background-color: var(--bg-color);
+            /* Textura de fundo estilo fantasia sombria */
+            background-image: url('https://www.transparenttextures.com/patterns/dark-leather.png'), linear-gradient(to bottom, #0f0f13, #1a1a2e);
+            color: var(--text-color);
             margin: 0;
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         header {
             text-align: center;
-            padding: 10px;
-            background-color: #252525;
-            border-bottom: 2px solid #333;
+            padding: 15px;
+            background: linear-gradient(to right, rgba(0,0,0,0.8), rgba(40,40,60,0.8), rgba(0,0,0,0.8));
+            border-bottom: 3px solid var(--accent-gold);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            position: relative;
         }
 
         h1 {
             margin: 0;
-            font-size: 1.2rem;
-            color: #ccc;
+            font-size: 1.8rem;
+            color: var(--accent-gold);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.7);
+            letter-spacing: 2px;
         }
 
-        /* Container Principal - Layout de 3 Colunas */
+        /* Botão de Mute */
+        .sound-toggle {
+            position: absolute;
+            top: 50%;
+            right: 20px;
+            transform: translateY(-50%);
+            background: none;
+            border: 2px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 5px 10px;
+            cursor: pointer;
+            font-family: 'Cinzel Decorative', serif;
+            font-size: 0.8rem;
+            border-radius: 4px;
+        }
+        .sound-toggle:hover { background: rgba(203, 163, 94, 0.2); }
+        .muted { color: var(--accent-red); border-color: var(--accent-red); }
+
+
+        /* Container Principal */
         .game-board {
             display: flex;
-            flex: 1; /* Ocupa o resto da altura da tela */
+            flex: 1;
             flex-direction: row;
-            justify-content: space-around;
+            justify-content: center;
             align-items: stretch;
-            padding: 10px;
-            gap: 10px;
+            padding: 20px;
+            gap: 20px;
+            flex-wrap: wrap; /* Permite quebrar linha em telas menores */
         }
 
         /* Cartão do Jogador */
         .player-card {
-            background-color: #2a2a2a;
-            border-radius: 12px;
-            flex: 1; /* Cada jogador ocupa espaço igual */
+            background-color: var(--card-bg);
+            /* Borda estilo moldura antiga */
+            border: 4px solid transparent;
+            border-image: linear-gradient(to bottom right, #4a4a5a, #2a2a3a) 1;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5), inset 0 0 20px rgba(0,0,0,0.2);
+            flex: 1 1 300px; /* Flex-grow, flex-shrink, flex-basis */
+            max-width: 400px;
+            min-width: 280px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            border: 1px solid #333;
-            transition: border-color 0.3s;
+            position: relative;
+            overflow: hidden;
         }
 
-        /* Input para o Nome do Jogador */
+        /* Efeito de brilho nas bordas */
+        .player-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            border: 2px solid var(--accent-gold);
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Avatar */
+        .avatar-container {
+            width: 120px;
+            height: 120px;
+            margin-top: -30px; /* Sobe um pouco para fora do card */
+            border-radius: 50%;
+            border: 4px solid var(--accent-gold);
+            box-shadow: 0 0 15px var(--accent-gold);
+            overflow: hidden;
+            background: #000;
+            z-index: 2;
+        }
+        .avatar-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Input Nome */
         .player-name {
             background: transparent;
             border: none;
-            border-bottom: 1px solid #555;
-            color: #fff;
+            border-bottom: 2px solid var(--border-color);
+            color: var(--accent-gold);
             text-align: center;
-            font-size: 1.2rem;
-            width: 90%;
-            margin-bottom: 20px;
+            font-size: 1.5rem;
+            font-family: 'Cinzel Decorative', serif;
+            width: 80%;
+            margin: 20px 0 10px 0;
             padding: 5px;
             outline: none;
+            text-shadow: 1px 1px 2px black;
         }
+        .player-name:focus { border-bottom-color: var(--accent-gold); }
 
-        .player-name:focus {
-            border-bottom: 1px solid #9b59b6;
-        }
-
-        /* Display de Vida */
-        .life-total {
-            font-size: 5rem;
-            font-weight: bold;
+        /* Display de Vida Container */
+        .life-container {
+            position: relative;
             margin: 10px 0;
-            user-select: none; /* Evita selecionar o texto ao clicar rápido */
+            padding: 20px;
         }
 
-        /* Cores baseadas na vida (Opcional, mas visualmente útil) */
-        .life-high { color: #2ecc71; }
-        .life-mid { color: #f1c40f; }
-        .life-low { color: #e74c3c; }
-        .life-dead { color: #7f8c8d; text-decoration: line-through; }
+        /* Display de Vida Numérico */
+        .life-total {
+            font-size: 6rem;
+            font-weight: 900;
+            user-select: none;
+            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            transition: color 0.3s;
+            /* Gradiente metálico no texto */
+            background: linear-gradient(to bottom, #ffffff, #a0a0a0);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Estados de vida */
+        .life-healthy { filter: drop-shadow(0 0 5px var(--accent-green)); }
+        .life-danger { filter: drop-shadow(0 0 8px var(--accent-red)); }
+        .life-dead {
+            filter: grayscale(100%) drop-shadow(0 0 2px #000) !important;
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
 
         /* Botões de Controle */
         .controls {
             display: flex;
-            gap: 10px;
-            margin-top: 20px;
+            gap: 15px;
+            margin-bottom: 20px;
+            z-index: 2;
         }
 
-        button {
-            border: none;
-            border-radius: 8px;
-            padding: 15px;
-            font-size: 1.2rem;
+        .btn-control {
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 1.8rem;
             cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.1s, background-color 0.2s;
-            width: 50px;
-            height: 50px;
+            font-family: 'Cinzel Decorative', serif;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: linear-gradient(to bottom, #3a3a4a, #2a2a3a);
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+            text-shadow: 1px 1px 2px black;
         }
 
-        button:active {
-            transform: scale(0.95);
-        }
+        .btn-control:active { transform: scale(0.92); box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
 
-        .btn-minus {
-            background-color: #c0392b;
-            color: white;
-        }
-        .btn-minus:hover { background-color: #e74c3c; }
+        .btn-minus { color: #ff6b6b; border-color: var(--accent-red); }
+        .btn-minus:hover { background: var(--accent-red); color: white; box-shadow: 0 0 10px var(--accent-red); }
 
-        .btn-plus {
-            background-color: #27ae60;
-            color: white;
-        }
-        .btn-plus:hover { background-color: #2ecc71; }
+        .btn-plus { color: #51cf66; border-color: var(--accent-green); }
+        .btn-plus:hover { background: var(--accent-green); color: white; box-shadow: 0 0 10px var(--accent-green); }
+
 
         /* Botão de Reset */
         .reset-container {
             padding: 20px;
             text-align: center;
-            background-color: #252525;
         }
 
         .btn-reset {
-            background-color: #333;
-            color: #aaa;
-            padding: 10px 20px;
-            width: auto;
-            height: auto;
-            font-size: 0.9rem;
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-color);
+            padding: 10px 30px;
+            font-size: 1rem;
+            font-family: 'Cinzel Decorative', serif;
+            cursor: pointer;
+            transition: all 0.3s;
         }
-        .btn-reset:hover { background-color: #444; color: white; }
+        .btn-reset:hover { border-color: var(--accent-gold); color: var(--accent-gold); box-shadow: 0 0 10px rgba(203, 163, 94, 0.3); }
 
-        /* Responsividade para Celulares (Empilha em vez de colunas) */
+        /* --- ANIMAÇÕES CSS --- */
+
+        /* Animação de Dano (Tremor e Vermelho) */
+        @keyframes damageShake {
+            0% { transform: translate(0, 0) rotate(0deg); color: #fff; }
+            25% { transform: translate(-5px, 2px) rotate(-2deg); color: var(--accent-red); }
+            50% { transform: translate(5px, -2px) rotate(2deg); color: #fff; }
+            75% { transform: translate(-3px, 1px) rotate(-1deg); color: var(--accent-red); }
+            100% { transform: translate(0, 0) rotate(0deg); color: #fff; }
+        }
+
+        .animate-damage {
+            animation: damageShake 0.4s ease-in-out;
+        }
+
+        /* Animação de Cura (Brilho Dourado/Verde) */
+        @keyframes healGlow {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.15); filter: brightness(1.5) drop-shadow(0 0 20px var(--accent-gold)); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        .animate-heal {
+             animation: healGlow 0.5s ease-out;
+        }
+
+        /* Responsividade */
         @media (max-width: 768px) {
-            .game-board {
-                flex-direction: column;
-            }
-            .player-card {
-                flex-direction: row; /* No mobile, layout horizontal por jogador */
-                justify-content: space-between;
-                padding: 10px 20px;
-            }
-            .life-total {
-                font-size: 3rem;
-                margin: 0 15px;
-            }
-            .player-name {
-                width: 30%;
-                margin-bottom: 0;
-                text-align: left;
-            }
+            .game-board { padding: 10px; gap: 30px; }
+            .player-card { min-width: 100%; margin-top: 30px;}
+            .avatar-container { width: 100px; height: 100px; }
+             .life-total { font-size: 5rem; }
         }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>Contador de Vida - Magic: The Gathering</h1>
+        <h1>Contador de Vida MTG</h1>
+        <button class="sound-toggle" id="soundBtn" onclick="toggleSound()">Sons: ON</button>
     </header>
 
     <div class="game-board">
         <div class="player-card" id="p1-card">
-            <input type="text" class="player-name" placeholder="Jogador 1">
-            <div class="life-total life-high" id="p1-life">20</div>
+            <div class="avatar-container">
+                <img src="https://i.pinimg.com/originals/04/e2/2f/04e22f85b437972b682ddc8b66bb554b.jpg" alt="Avatar Mago" class="avatar-img">
+            </div>
+            <input type="text" class="player-name" value="Arquimago">
+            <div class="life-container">
+                <div class="life-total life-healthy" id="p1-life">20</div>
+            </div>
             <div class="controls">
-                <button class="btn-minus" onclick="updateLife(1, -1)">-</button>
-                <button class="btn-plus" onclick="updateLife(1, 1)">+</button>
+                <button class="btn-control btn-minus" onclick="updateLife(1, -1)">-</button>
+                <button class="btn-control btn-plus" onclick="updateLife(1, 1)">+</button>
             </div>
         </div>
 
         <div class="player-card" id="p2-card">
-            <input type="text" class="player-name" placeholder="Jogador 2">
-            <div class="life-total life-high" id="p2-life">20</div>
+             <div class="avatar-container">
+                <img src="https://i.pinimg.com/736x/64/1e/2f/641e2f0b808b9216d9c2c583f841d84f.jpg" alt="Avatar Guerreiro" class="avatar-img">
+            </div>
+            <input type="text" class="player-name" value="Campeão">
+            <div class="life-container">
+                <div class="life-total life-healthy" id="p2-life">20</div>
+            </div>
             <div class="controls">
-                <button class="btn-minus" onclick="updateLife(2, -1)">-</button>
-                <button class="btn-plus" onclick="updateLife(2, 1)">+</button>
+                <button class="btn-control btn-minus" onclick="updateLife(2, -1)">-</button>
+                <button class="btn-control btn-plus" onclick="updateLife(2, 1)">+</button>
             </div>
         </div>
 
         <div class="player-card" id="p3-card">
-            <input type="text" class="player-name" placeholder="Jogador 3">
-            <div class="life-total life-high" id="p3-life">20</div>
+             <div class="avatar-container">
+                 <img src="https://i.pinimg.com/originals/57/90/5d/57905d6099e0f7777868276bc7b7bc8d.jpg" alt="Avatar Sombrio" class="avatar-img">
+            </div>
+            <input type="text" class="player-name" value="Ladino">
+            <div class="life-container">
+                <div class="life-total life-healthy" id="p3-life">20</div>
+            </div>
             <div class="controls">
-                <button class="btn-minus" onclick="updateLife(3, -1)">-</button>
-                <button class="btn-plus" onclick="updateLife(3, 1)">+</button>
+                <button class="btn-control btn-minus" onclick="updateLife(3, -1)">-</button>
+                <button class="btn-control btn-plus" onclick="updateLife(3, 1)">+</button>
             </div>
         </div>
     </div>
 
     <div class="reset-container">
-        <button class="btn-reset" onclick="resetGame()">Reiniciar Jogo (20)</button>
+        <button class="btn-reset" onclick="resetGame()">Reiniciar Partida</button>
     </div>
 
     <script>
-        // Estado inicial
-        const initialLife = 20;
-        let scores = {
-            1: initialLife,
-            2: initialLife,
-            3: initialLife
-        };
+        // --- Configuração de Audio ---
+        // Usando links CDN confiáveis para sons curtos.
+        // Som de impacto (espada/soco)
+        const hitSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-dagger-woosh-1487.mp3');
+        // Som de cura (magia brilhante)
+        const healSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-magic-sparkle-whoosh-2350.mp3');
 
-        function updateLife(playerNum, change) {
-            // Atualiza a variável de estado
-            scores[playerNum] += change;
+        hitSound.volume = 0.3; // Reduzindo volume para não assustar
+        healSound.volume = 0.3;
 
-            // Seleciona o elemento HTML
-            const display = document.getElementById(`p${playerNum}-life`);
-            const currentLife = scores[playerNum];
+        let soundEnabled = true;
+        const soundBtn = document.getElementById('soundBtn');
 
-            // Atualiza o texto
-            display.innerText = currentLife;
-
-            // Atualiza a cor baseado na vida restante
-            updateColor(display, currentLife);
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            soundBtn.innerText = soundEnabled ? "Sons: ON" : "Sons: MUTE";
+            soundBtn.classList.toggle('muted', !soundEnabled);
         }
 
-        function updateColor(element, life) {
-            // Remove classes antigas
-            element.classList.remove('life-high', 'life-mid', 'life-low', 'life-dead');
+        function playSFX(type) {
+            if (!soundEnabled) return;
 
-            // Adiciona a classe correta
+            // Clona o nodo de áudio para permitir sons sobrepostos rápidos
+            let soundToPlay;
+            if(type === 'hit') soundToPlay = hitSound.cloneNode();
+            if(type === 'heal') soundToPlay = healSound.cloneNode();
+
+            if(soundToPlay) {
+                soundToPlay.volume = 0.3;
+                soundToPlay.play().catch(e => console.log("Erro ao tocar som (interação necessária):", e));
+            }
+        }
+
+        // --- Lógica do Jogo ---
+        const initialLife = 20;
+        let scores = { 1: initialLife, 2: initialLife, 3: initialLife };
+
+        function updateLife(playerNum, change) {
+            scores[playerNum] += change;
+            const currentLife = scores[playerNum];
+            const displayElement = document.getElementById(`p${playerNum}-life`);
+
+            // Atualiza o número
+            displayElement.innerText = currentLife;
+
+            // --- Animações e Sons ---
+            // Remove classes de animação anteriores para poder reiniciar
+            displayElement.classList.remove('animate-damage', 'animate-heal');
+
+            // Força um "reflow" para o navegador perceber que removemos a classe (hack necessário para reiniciar animações CSS)
+            void displayElement.offsetWidth;
+
+            if (change < 0) {
+                // Dano
+                displayElement.classList.add('animate-damage');
+                playSFX('hit');
+            } else if (change > 0) {
+                // Cura
+                displayElement.classList.add('animate-heal');
+                playSFX('heal');
+            }
+
+            // Remove as classes de animação após elas terminarem (aprox 500ms)
+            setTimeout(() => {
+                 displayElement.classList.remove('animate-damage', 'animate-heal');
+                 updateVisualState(displayElement, currentLife);
+            }, 500);
+        }
+
+        function updateVisualState(element, life) {
+            // Remove estados antigos
+            element.classList.remove('life-healthy', 'life-danger', 'life-dead');
+
             if (life <= 0) {
                 element.classList.add('life-dead');
-            } else if (life <= 5) {
-                element.classList.add('life-low');
-            } else if (life <= 10) {
-                element.classList.add('life-mid');
+            } else if (life <= 7) {
+                element.classList.add('life-danger');
             } else {
-                element.classList.add('life-high');
+                element.classList.add('life-healthy');
             }
         }
 
         function resetGame() {
-            if(confirm("Tem certeza que deseja reiniciar as vidas para 20?")) {
+            // Efeito sonoro dramático para reset? Opcional. Usando o de cura por enquanto.
+            playSFX('heal');
+            if(confirm("Deseja reiniciar a batalha para 20 de vida?")) {
                 [1, 2, 3].forEach(num => {
                     scores[num] = initialLife;
                     const display = document.getElementById(`p${num}-life`);
                     display.innerText = initialLife;
-                    updateColor(display, initialLife);
+                    updateVisualState(display, initialLife);
+                    // Uma pequena animação de "surgimento" no reset
+                    display.classList.add('animate-heal');
+                    setTimeout(() => display.classList.remove('animate-heal'), 500);
                 });
             }
         }
+
+        // Inicialização visual
+        [1, 2, 3].forEach(num => updateVisualState(document.getElementById(`p${num}-life`), initialLife));
+
     </script>
 </body>
 </html>
