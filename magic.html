@@ -1,390 +1,405 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MTG Commander Tracker: Classic Edition</title>
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>ARCADE MTG TRACKER</title>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=MedievalSharp&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Press+Start+2P&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --bg-dark: #0f0f13;
-            --card-bg: #1a1a21;
-            --gold: #cba35e;
-            --gold-dim: #8a6e3e;
-            --blood: #cf3434;
-            --life: #4caf50;
-            --mana-blue: #2980b9;
-            --text-main: #ecf0f1;
+            --p1-color: #00d2ff; /* Cyan */
+            --p2-color: #ff2a6d; /* Neon Red */
+            --p3-color: #05ffa1; /* Neon Green */
+            --bg-color: #101010;
+            --danger-color: #ff0000;
         }
 
-        * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        * {
+            box-sizing: border-box;
+            user-select: none; /* No text selection */
+            -webkit-touch-callout: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body {
             margin: 0;
-            font-family: 'Cinzel', serif;
-            background-color: var(--bg-dark);
-            background-image: 
-                linear-gradient(rgba(0,0,0,0.8), rgba(0,0,0,0.8)),
-                url('https://www.transparenttextures.com/patterns/dark-matter.png');
-            color: var(--text-main);
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Black Ops One', cursive;
+            overflow: hidden; /* No scrolling */
             height: 100vh;
+            width: 100vw;
             display: flex;
             flex-direction: column;
-            overflow: hidden;
         }
 
-        /* --- UI Overlay de Inicio (Para ativar som) --- */
-        #start-overlay {
+        /* --- START SCREEN (Required for Audio) --- */
+        #start-screen {
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.95);
-            z-index: 999;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
+            align-items: center;
             justify-content: center;
-            align-items: center;
-            transition: opacity 0.5s;
-        }
-        .btn-start {
-            background: transparent;
-            border: 2px solid var(--gold);
-            color: var(--gold);
-            padding: 20px 40px;
-            font-size: 2rem;
-            font-family: 'Cinzel', serif;
             cursor: pointer;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            transition: 0.3s;
-            box-shadow: 0 0 20px rgba(203, 163, 94, 0.2);
         }
-        .btn-start:hover {
-            background: var(--gold);
-            color: #000;
-            box-shadow: 0 0 40px rgba(203, 163, 94, 0.6);
-        }
-
-        /* --- Layout do Jogo --- */
-        header {
-            text-align: center;
-            padding: 10px;
-            border-bottom: 1px solid #333;
-            background: rgba(0,0,0,0.4);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+        
+        .insert-coin {
+            font-family: 'Press Start 2P', cursive;
+            font-size: 2vw;
+            animation: blink 1s infinite;
+            color: yellow;
+            margin-top: 20px;
         }
 
-        .header-title { font-size: 1.2rem; letter-spacing: 2px; color: var(--gold); }
-        .reset-icon { cursor: pointer; font-size: 1.5rem; transition: transform 0.3s; }
-        .reset-icon:hover { transform: rotate(180deg); color: var(--blood); }
-
-        .game-container {
+        /* --- MAIN LAYOUT --- */
+        .arena {
             display: flex;
             flex: 1;
             width: 100%;
             height: 100%;
         }
 
-        /* --- Player Card Design --- */
-        .player-column {
+        /* Portrait Mode (Stack vertically) */
+        @media (orientation: portrait) {
+            .arena { flex-direction: column; }
+        }
+
+        /* --- PLAYER CARD --- */
+        .player-zone {
             flex: 1;
             position: relative;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #333;
-            transition: background 0.2s;
+            border: 4px solid #222;
             overflow: hidden;
-        }
-        .player-column:last-child { border-right: none; }
-
-        /* Imagem de Fundo do Avatar */
-        .player-bg {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-size: cover;
-            background-position: center;
-            opacity: 0.35;
-            z-index: 0;
-            transition: transform 0.5s, opacity 0.3s;
-            filter: grayscale(40%);
-        }
-        
-        /* Efeito de Dano (Flash Vermelho) */
-        .damage-overlay {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: radial-gradient(circle, transparent 20%, rgba(200, 0, 0, 0.8) 100%);
-            opacity: 0;
-            z-index: 1;
-            pointer-events: none;
-            transition: opacity 0.1s;
-        }
-
-        /* Conteúdo do Card */
-        .player-content {
-            position: relative;
-            z-index: 2;
-            flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 20px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.8) 100%);
+            align-items: center;
+            transition: all 0.1s;
         }
 
-        /* Nome Editável */
+        /* Distinct Colors */
+        #p1 { border-color: var(--p1-color); box-shadow: inset 0 0 20px rgba(0, 210, 255, 0.1); }
+        #p2 { border-color: var(--p2-color); box-shadow: inset 0 0 20px rgba(255, 42, 109, 0.1); }
+        #p3 { border-color: var(--p3-color); box-shadow: inset 0 0 20px rgba(5, 255, 161, 0.1); }
+
+        /* Dead State */
+        .dead {
+            filter: grayscale(100%) brightness(0.3);
+            pointer-events: none;
+        }
+
+        /* Background Health Bar */
+        .health-bar-bg {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%; height: 0%; /* Grows up */
+            opacity: 0.2;
+            z-index: 0;
+            transition: height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        #p1 .health-bar-bg { background-color: var(--p1-color); }
+        #p2 .health-bar-bg { background-color: var(--p2-color); }
+        #p3 .health-bar-bg { background-color: var(--p3-color); }
+
+        /* UI Elements */
         .player-name {
+            z-index: 2;
             background: transparent;
             border: none;
-            color: #ccc;
-            font-family: 'MedievalSharp', cursive;
-            font-size: 1.5rem;
+            color: rgba(255,255,255,0.7);
+            font-family: 'Press Start 2P', cursive;
+            font-size: 1rem;
             text-align: center;
-            width: 100%;
-            text-shadow: 2px 2px 4px #000;
-            outline: none;
-            margin-bottom: 10px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
         }
-        .player-name:focus { color: var(--gold); }
 
-        /* Contador de Vida */
-        .life-display {
-            font-size: 7rem;
-            font-weight: 700;
-            margin: 10px 0;
-            text-shadow: 0 5px 15px rgba(0,0,0,0.8);
+        .life-counter {
+            z-index: 2;
+            font-size: 12rem; /* Massive Font */
+            line-height: 1;
+            text-shadow: 4px 4px 0px #000;
             position: relative;
+        }
+
+        /* --- TOUCH ZONES (Invisible Buttons) --- */
+        .touch-zone {
+            position: absolute;
+            top: 0; bottom: 0;
+            width: 50%;
             z-index: 10;
-            cursor: pointer; /* Área de toque para "Undo" futuramente, ou apenas visual */
-        }
-
-        /* Botões de Controle (Estilo Magic) */
-        .controls {
-            display: flex;
-            gap: 20px;
-            width: 100%;
-            justify-content: center;
-            margin-top: 20px;
-        }
-
-        .btn-life {
-            width: 70px;
-            height: 70px;
-            border-radius: 50%;
-            border: 2px solid rgba(255,255,255,0.1);
-            background: rgba(0,0,0,0.5);
-            backdrop-filter: blur(5px);
-            color: white;
-            font-size: 2rem;
-            font-family: 'Cinzel', serif;
             cursor: pointer;
-            transition: all 0.1s;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            opacity: 0; /* Hidden until pressed */
+            transition: opacity 0.1s;
+            font-size: 5rem;
+            font-weight: bold;
+            color: white;
+            background: rgba(255,255,255,0.1);
         }
-
-        .btn-minus:active { background: rgba(207, 52, 52, 0.6); border-color: var(--blood); transform: scale(0.95); }
-        .btn-plus:active { background: rgba(76, 175, 80, 0.6); border-color: var(--life); transform: scale(0.95); }
         
-        .btn-life:hover { border-color: var(--gold); }
+        .zone-left { left: 0; }
+        .zone-left:active { opacity: 1; background: rgba(255, 0, 0, 0.3); } /* Red flash on tap */
+        .zone-left::after { content: "-"; }
 
-        /* Animações CSS */
-        @keyframes shake {
-            0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        .zone-right { right: 0; }
+        .zone-right:active { opacity: 1; background: rgba(255, 255, 255, 0.3); } /* White flash on tap */
+        .zone-right::after { content: "+"; }
+
+
+        /* --- ANIMATIONS --- */
+        
+        /* Floating Combat Text */
+        .floating-text {
+            position: absolute;
+            color: #fff;
+            font-size: 4rem;
+            font-weight: bold;
+            pointer-events: none;
+            z-index: 20;
+            text-shadow: 2px 2px 0 #000;
+            animation: floatUp 0.8s ease-out forwards;
+        }
+        
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { transform: translateY(-20px) scale(1.2); opacity: 1; }
+            100% { transform: translateY(-100px) scale(1); opacity: 0; }
         }
 
-        .shaking { animation: shake 0.4s; color: var(--blood); }
-        .healing { color: var(--life); text-shadow: 0 0 20px var(--life); transition: color 0.3s; }
+        .dmg-text { color: #ff2a6d; }
+        .heal-text { color: #05ffa1; }
 
-        /* Responsividade Mobile */
+        /* Screen Shake */
+        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- RESET BUTTON --- */
+        .reset-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #333;
+            border: 2px solid white;
+            color: white;
+            border-radius: 50%;
+            z-index: 100;
+            font-size: 1.5rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0.5;
+        }
+        .reset-btn:active { transform: scale(0.9); opacity: 1; }
+
+        /* Responsive Text Sizing */
+        @media (max-width: 1024px) {
+            .life-counter { font-size: 8rem; }
+        }
         @media (max-width: 768px) {
-            .game-container { flex-direction: column; }
-            .player-column { border-right: none; border-bottom: 1px solid #333; flex: 1; }
-            .player-bg { background-position: top center; }
-            .life-display { font-size: 5rem; margin: 0; }
-            .btn-life { width: 50px; height: 50px; font-size: 1.5rem; }
-            .player-name { font-size: 1.2rem; margin-bottom: 5px; }
-            .controls { margin-top: 5px; }
+            .life-counter { font-size: 6rem; }
+            .player-name { font-size: 0.8rem; }
         }
 
     </style>
 </head>
 <body>
 
-    <div id="start-overlay">
-        <h1 style="color: var(--gold); text-shadow: 0 0 10px rgba(0,0,0,0.8); margin-bottom: 40px;">Magic: The Gathering</h1>
-        <button class="btn-start" onclick="startGame()">Iniciar Partida</button>
+    <div id="start-screen" onclick="initGame()">
+        <h1 style="font-size: 4rem; color: #fff; text-align: center; margin:0; text-shadow: 4px 4px var(--p2-color);">BATTLE MODE</h1>
+        <div class="insert-coin">TAP TO START</div>
     </div>
 
-    <header>
-        <div class="header-title">Battle Tracker</div>
-        <div class="reset-icon" onclick="resetGame()" title="Reiniciar Jogo">↻</div>
-    </header>
-
-    <div class="game-container">
+    <div class="arena">
         
-        <div class="player-column" id="p1">
-            <div class="player-bg" style="background-image: url('https://wizards.com/contentimages/magic/daily/wallpapers/Gideon_Jura_1280x960_Wallpaper.jpg');"></div>
-            <div class="damage-overlay" id="p1-dmg-overlay"></div>
-            <div class="player-content">
-                <input type="text" class="player-name" value="Planeswalker 1">
-                <div class="life-display" id="p1-score">20</div>
-                <div class="controls">
-                    <button class="btn-life btn-minus" onclick="changeLife(1, -1)">-</button>
-                    <button class="btn-life btn-plus" onclick="changeLife(1, 1)">+</button>
-                </div>
-            </div>
+        <div class="player-zone" id="p1">
+            <div class="health-bar-bg" id="p1-bar" style="height: 100%"></div>
+            <div class="touch-zone zone-left" onpointerdown="modifyLife(1, -1, event)"></div>
+            <div class="touch-zone zone-right" onpointerdown="modifyLife(1, 1, event)"></div>
+            
+            <input class="player-name" value="PLAYER 1">
+            <div class="life-counter" id="p1-score">20</div>
         </div>
 
-        <div class="player-column" id="p2">
-            <div class="player-bg" style="background-image: url('https://media.wizards.com/images/magic/daily/wallpapers/Liliana_Vess_1280x960_Wallpaper.jpg');"></div>
-            <div class="damage-overlay" id="p2-dmg-overlay"></div>
-            <div class="player-content">
-                <input type="text" class="player-name" value="Planeswalker 2">
-                <div class="life-display" id="p2-score">20</div>
-                <div class="controls">
-                    <button class="btn-life btn-minus" onclick="changeLife(2, -1)">-</button>
-                    <button class="btn-life btn-plus" onclick="changeLife(2, 1)">+</button>
-                </div>
-            </div>
+        <div class="player-zone" id="p2">
+            <div class="health-bar-bg" id="p2-bar" style="height: 100%"></div>
+            <div class="touch-zone zone-left" onpointerdown="modifyLife(2, -1, event)"></div>
+            <div class="touch-zone zone-right" onpointerdown="modifyLife(2, 1, event)"></div>
+
+            <input class="player-name" value="PLAYER 2">
+            <div class="life-counter" id="p2-score">20</div>
         </div>
 
-        <div class="player-column" id="p3">
-            <div class="player-bg" style="background-image: url('https://media.wizards.com/images/magic/daily/wallpapers/Chandra_Nalaar_1280x960_Wallpaper.jpg');"></div>
-            <div class="damage-overlay" id="p3-dmg-overlay"></div>
-            <div class="player-content">
-                <input type="text" class="player-name" value="Planeswalker 3">
-                <div class="life-display" id="p3-score">20</div>
-                <div class="controls">
-                    <button class="btn-life btn-minus" onclick="changeLife(3, -1)">-</button>
-                    <button class="btn-life btn-plus" onclick="changeLife(3, 1)">+</button>
-                </div>
-            </div>
+        <div class="player-zone" id="p3">
+            <div class="health-bar-bg" id="p3-bar" style="height: 100%"></div>
+            <div class="touch-zone zone-left" onpointerdown="modifyLife(3, -1, event)"></div>
+            <div class="touch-zone zone-right" onpointerdown="modifyLife(3, 1, event)"></div>
+
+            <input class="player-name" value="PLAYER 3">
+            <div class="life-counter" id="p3-score">20</div>
         </div>
 
     </div>
+
+    <div class="reset-btn" onclick="resetGame()">R</div>
 
     <script>
-        // --- Gerenciamento de Audio ---
-        // Usando sons curtos e responsivos via CDN (Mixkit)
-        const sounds = {
-            hit: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-hard-sword-woosh-1485.mp3'),
-            heavyHit: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-dagger-woosh-1487.mp3'),
-            heal: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-fairy-glitter-867.mp3'),
-            start: new Audio('https://assets.mixkit.co/sfx/preview/mixkit-medieval-show-fanfare-announcement-226.mp3')
-        };
+        // --- AUDIO ENGINE (Arcade Synthesis) ---
+        // Using Oscillator nodes so we don't rely on external MP3s loading slowly
+        let audioCtx;
 
-        // Pré-carregar e ajustar volumes
-        Object.values(sounds).forEach(s => s.volume = 0.4);
-        sounds.start.volume = 0.2;
-
-        let gameStarted = false;
-
-        function startGame() {
-            document.getElementById('start-overlay').style.opacity = '0';
-            setTimeout(() => {
-                document.getElementById('start-overlay').style.display = 'none';
-            }, 500);
-            
-            sounds.start.play().catch(e => console.log("Erro audio:", e));
-            gameStarted = true;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
         }
 
-        function playSound(type) {
-            if(!gameStarted) return;
-            // Clone node permite tocar o mesmo som sobreposto (rapid fire)
-            const s = sounds[type].cloneNode();
-            s.volume = sounds[type].volume;
-            s.play();
+        function playTone(freq, type, duration) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            
+            // Arcade envelope (quick attack/decay)
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
         }
 
-        // --- Lógica do Jogo ---
-        const scores = { 1: 20, 2: 20, 3: 20 };
+        function playDamageSound() {
+            // Retro "Hit" sound (Sawtooth drop)
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
 
-        function changeLife(player, amount) {
-            scores[player] += amount;
-            
-            // Elementos DOM
-            const display = document.getElementById(`p${player}-score`);
-            const card = document.getElementById(`p${player}`);
-            const damageOverlay = document.getElementById(`p${player}-dmg-overlay`);
-            const bg = card.querySelector('.player-bg');
+        function playHealSound() {
+            // Retro "Coin/Powerup" sound (Two sine waves)
+            playTone(880, 'sine', 0.1);
+            setTimeout(() => playTone(1320, 'sine', 0.2), 100);
+        }
 
-            // Atualiza Texto
-            display.innerText = scores[player];
+        // --- GAME LOGIC ---
+        
+        let scores = { 1: 20, 2: 20, 3: 20 };
+        const maxLife = 40; // Reference for health bar height
 
-            // Feedback Visual e Sonoro
-            display.classList.remove('shaking', 'healing');
-            void display.offsetWidth; // Trigger reflow para reiniciar animação
+        function initGame() {
+            initAudio();
+            // Play Start Sound
+            playTone(440, 'square', 0.1);
+            setTimeout(() => playTone(554, 'square', 0.1), 100);
+            setTimeout(() => playTone(659, 'square', 0.2), 200);
 
+            const screen = document.getElementById('start-screen');
+            screen.style.opacity = 0;
+            setTimeout(() => screen.remove(), 500);
+        }
+
+        function modifyLife(id, amount, event) {
+            if(event) event.stopPropagation(); // Prevent zooming or ghost clicks
+
+            // Update Score
+            scores[id] += amount;
+            const elScore = document.getElementById(`p${id}-score`);
+            const elZone = document.getElementById(`p${id}`);
+            const elBar = document.getElementById(`p${id}-bar`);
+
+            elScore.innerText = scores[id];
+
+            // Update Health Bar Height
+            // Cap at 100%, Min 0%
+            let percentage = (scores[id] / 20) * 50; // Visual logic: 20 life = 50% full (room for overheal)
+            if (percentage > 100) percentage = 100;
+            if (percentage < 0) percentage = 0;
+            elBar.style.height = `${percentage}%`;
+
+            // Visual Effects
             if (amount < 0) {
-                // DANO
-                playSound(amount < -2 ? 'heavyHit' : 'hit');
-                display.classList.add('shaking');
-                
-                // Flash de sangue
-                damageOverlay.style.opacity = '1';
-                setTimeout(() => damageOverlay.style.opacity = '0', 200);
-
-                // Zoom in no background (efeito de tensão)
-                bg.style.transform = "scale(1.1)";
-                setTimeout(() => bg.style.transform = "scale(1)", 200);
-
+                playDamageSound();
+                elZone.classList.add('shake');
+                elScore.style.color = '#ff4d4d'; // Flash Red
+                setTimeout(() => elScore.style.color = 'white', 200);
+                setTimeout(() => elZone.classList.remove('shake'), 300);
+                spawnFloatingText(event.clientX, event.clientY, amount);
             } else {
-                // CURA
-                playSound('heal');
-                display.classList.add('healing');
-                setTimeout(() => display.classList.remove('healing'), 500);
+                playHealSound();
+                elScore.style.color = '#05ffa1'; // Flash Green
+                setTimeout(() => elScore.style.color = 'white', 200);
+                spawnFloatingText(event.clientX, event.clientY, "+" + amount);
             }
 
-            // Morte visual
-            if (scores[player] <= 0) {
-                card.style.filter = "grayscale(100%) brightness(0.5)";
-                display.style.textDecoration = "line-through";
-                display.style.color = "#666";
+            // Death Check
+            if (scores[id] <= 0) {
+                elZone.classList.add('dead');
+                elScore.innerText = "K.O.";
             } else {
-                card.style.filter = "none";
-                display.style.textDecoration = "none";
-                display.style.color = "var(--text-main)";
+                elZone.classList.remove('dead');
             }
+        }
+
+        function spawnFloatingText(x, y, text) {
+            const el = document.createElement('div');
+            el.className = 'floating-text';
+            el.innerText = text;
+            
+            // Color based on damage/heal
+            if (text.toString().includes("-")) el.classList.add('dmg-text');
+            else el.classList.add('heal-text');
+
+            // Position adjustment (center on touch)
+            // If event is missing (reset), default to center
+            if (!x) { x = window.innerWidth/2; y = window.innerHeight/2; }
+            
+            el.style.left = (x - 20) + 'px';
+            el.style.top = (y - 50) + 'px';
+            
+            document.body.appendChild(el);
+            setTimeout(() => el.remove(), 800);
         }
 
         function resetGame() {
-            if(confirm("Reiniciar duelo?")) {
+            if(confirm("RESET GAME?")) {
                 [1,2,3].forEach(id => {
                     scores[id] = 20;
-                    const display = document.getElementById(`p${id}-score`);
-                    const card = document.getElementById(`p${id}`);
-                    
-                    display.innerText = 20;
-                    display.classList.remove('shaking', 'healing');
-                    
-                    card.style.filter = "none";
-                    display.style.textDecoration = "none";
-                    display.style.color = "var(--text-main)";
-                    
-                    // Pequena animação de reset
-                    changeLife(id, 0); 
+                    document.getElementById(`p${id}-score`).innerText = 20;
+                    document.getElementById(`p${id}`).classList.remove('dead');
+                    document.getElementById(`p${id}-bar`).style.height = '50%';
                 });
-                sounds.start.play();
+                playTone(440, 'triangle', 0.5);
             }
         }
     </script>
